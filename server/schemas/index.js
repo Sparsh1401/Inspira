@@ -1,10 +1,12 @@
 const graphql = require("graphql");
-const { User, Pin, SavedPins } = require("../models");
+const { User, Pin, SavedPins, SharedBoard, BoardPin } = require("../models");
+const { Op } = require("sequelize");
 
 //TypeDefs
 const UserType = require("./UserSchema/index");
 const PinType = require("./PinSchema/index");
 const SavedPinType = require("./SavedPinsSchema/index");
+const SharedBoardType = require("./SharedBoardSchema/index");
 
 const {
   GraphQLObjectType,
@@ -29,7 +31,7 @@ const RootQuery = new GraphQLObjectType({
 
     myPins: {
       type: new GraphQLList(PinType),
-      args: { userId: { type: GraphQLString } },
+      args: { userId: { type: graphql.GraphQLID } },
       resolve(parent, args) {
         return Pin.findAll({
           where: {
@@ -60,6 +62,37 @@ const RootQuery = new GraphQLObjectType({
             googleId: args.googleId,
           },
         });
+      },
+    },
+
+    getPin: {
+      type: PinType,
+      args: { id: { type: graphql.GraphQLID } },
+      resolve(parent, args) {
+        return Pin.findByPk(args.id);
+      },
+    },
+
+    getBoards: {
+      type: new GraphQLList(SharedBoardType),
+      args: { userId: { type: graphql.GraphQLID } },
+      resolve(parent, args) {
+        return SharedBoard.findAll({
+          where: {
+            [Op.or]: [
+              { ownerId: args.userId },
+              { collaborators: { [Op.like]: `%"${args.userId}"%` } }
+            ]
+          }
+        });
+      },
+    },
+
+    getBoard: {
+      type: SharedBoardType,
+      args: { id: { type: graphql.GraphQLID } },
+      resolve(parent, args) {
+        return SharedBoard.findByPk(args.id);
       },
     },
   },
@@ -144,6 +177,58 @@ const Mutation = new GraphQLObjectType({
         }).catch((err) => {
           console.log(err);
         });
+      },
+    },
+
+    createBoard: {
+      type: SharedBoardType,
+      args: {
+        title: { type: GraphQLString },
+        description: { type: GraphQLString },
+        ownerId: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        return SharedBoard.create({
+          title: args.title,
+          description: args.description,
+          ownerId: args.ownerId,
+          collaborators: "[]",
+        });
+      },
+    },
+
+    addCollaborator: {
+      type: SharedBoardType,
+      args: {
+        boardId: { type: graphql.GraphQLID },
+        email: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        const board = await SharedBoard.findByPk(args.boardId);
+        if (!board) throw new Error("Board not found");
+        
+        const collaborators = JSON.parse(board.collaborators || "[]");
+        if (!collaborators.includes(args.email)) {
+          collaborators.push(args.email);
+          board.collaborators = JSON.stringify(collaborators);
+          await board.save();
+        }
+        return board;
+      },
+    },
+
+    addPinToBoard: {
+      type: PinType,
+      args: {
+        boardId: { type: graphql.GraphQLID },
+        pinId: { type: graphql.GraphQLID },
+      },
+      async resolve(parent, args) {
+        await BoardPin.create({
+          boardId: args.boardId,
+          pinId: args.pinId,
+        });
+        return Pin.findByPk(args.pinId);
       },
     },
   },

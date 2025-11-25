@@ -30,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
         notEmpty: true,
       },
     },
+    avatar: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
 
   return User;

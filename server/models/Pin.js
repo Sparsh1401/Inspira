@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
         notEmpty: true,
       },
     },
+    link: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     userId: {
       type: DataTypes.STRING,
       unique: false,
