@@ -13,14 +13,6 @@ import { useState } from 'react';
 function PinDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data, loading, error } = useQuery(GET_PIN_DETAILS, {
-        variables: { id }
-    });
-
-    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
-    if (error) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Error loading pin</div>;
-    if (!data?.getPin) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Pin not found</div>;
-
     const { user } = useAuth();
     const [savePin, { loading: saving }] = useMutation(SAVE_PIN);
     const [modalState, setModalState] = useState({ 
@@ -29,7 +21,15 @@ function PinDetail() {
         message: '' 
     });
 
-    const pin = data?.getPin;
+    const { data, loading, error } = useQuery(GET_PIN_DETAILS, {
+        variables: { id }
+    });
+
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
+    if (error) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Error loading pin</div>;
+    if (!data?.getPin) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Pin not found</div>;
+
+    const pin = data.getPin;
 
     const handleSavePin = async () => {
         if (!user) {

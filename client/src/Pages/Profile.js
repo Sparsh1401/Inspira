@@ -9,7 +9,13 @@ import { Avatar } from '@mui/material';
 function Profile() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('created');
+    const [userPins, setUserPins] = useState([]);
     const [savedPins, setSavedPins] = useState([]);
+
+    const { data, loading, error } = useQuery(GET_MY_PINS, {
+        variables: { userId: String(user?.id) },
+        skip: !user,
+    });
 
     const { data: savedData, loading: savedLoading } = useQuery(GET_SAVED_PINS, {
         variables: { googleId: user?.googleId },
