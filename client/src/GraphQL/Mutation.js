@@ -45,4 +45,14 @@ const ADD_PIN_TO_BOARD = gql`
     }
 `
 
-export {CREATE_PIN, CREATE_BOARD, ADD_COLLABORATOR, ADD_PIN_TO_BOARD} ;
+const SAVE_PIN = gql`
+    mutation savePin($googleId: String, $imageUrl: String) {
+        savePin(googleId: $googleId, imageUrl: $imageUrl) {
+            id
+            imageUrl
+            title
+        }
+    }
+`
+
+export {CREATE_PIN, CREATE_BOARD, ADD_COLLABORATOR, ADD_PIN_TO_BOARD, SAVE_PIN} ;

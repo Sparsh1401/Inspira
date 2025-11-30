@@ -1,10 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { GET_PIN_DETAILS } from '../GraphQL/Queries';
+import { SAVE_PIN } from '../GraphQL/Mutation';
+import { useAuth } from '../context/AuthContext';
 import { Avatar } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Modal from '../components/Modal';
+import { useState } from 'react';
 
 function PinDetail() {
     const { id } = useParams();
@@ -17,10 +21,43 @@ function PinDetail() {
     if (error) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Error loading pin</div>;
     if (!data?.getPin) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Pin not found</div>;
 
-    const pin = data.getPin;
+    const { user } = useAuth();
+    const [savePin, { loading: saving }] = useMutation(SAVE_PIN);
+    const [modalState, setModalState] = useState({ 
+        isOpen: false, 
+        title: '', 
+        message: '' 
+    });
+
+    const pin = data?.getPin;
+
+    const handleSavePin = async () => {
+        if (!user) {
+            setModalState({ isOpen: true, title: 'Login Required', message: 'Please login to save pins.' });
+            return;
+        }
+        try {
+            await savePin({
+                variables: {
+                    googleId: user.googleId,
+                    imageUrl: pin.imageUrl
+                }
+            });
+            setModalState({ isOpen: true, title: 'Success', message: 'Pin saved to your profile!' });
+        } catch (err) {
+            console.error("Error saving pin:", err);
+            setModalState({ isOpen: true, title: 'Error', message: 'Failed to save pin.' });
+        }
+    };
 
     return (
         <Wrapper>
+            <Modal 
+                isOpen={modalState.isOpen} 
+                onClose={() => setModalState({ ...modalState, isOpen: false })} 
+                title={modalState.title} 
+                message={modalState.message} 
+            />
             <BackButton onClick={() => navigate(-1)}>
                 <ArrowBackIcon />
             </BackButton>
@@ -35,7 +72,9 @@ function PinDetail() {
                             <Icon>...</Icon>
                             <Icon>↑</Icon>
                         </Icons>
-                        <SaveButton>Save</SaveButton>
+                        <SaveButton onClick={handleSavePin} disabled={saving}>
+                            {saving ? 'Saving...' : 'Save'}
+                        </SaveButton>
                     </Header>
                     
                     <Title>{pin.title}</Title>

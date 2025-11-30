@@ -24,11 +24,14 @@ const GET_LATEST_PINS = gql`
 `;
 
 const GET_SAVED_PINS = gql`
-    query getsavedpins{
-        userId
-        title
-        description
-        imageUrl
+    query getsavedpins($googleId: String){
+        getSavedPins(googleId: $googleId){
+            id
+            title
+            description
+            imageUrl
+            link
+        }
     }
 `
 

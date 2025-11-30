@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/client';
-import { GET_MY_PINS } from '../GraphQL/Queries';
+import { GET_MY_PINS, GET_SAVED_PINS } from '../GraphQL/Queries';
 import { useAuth } from '../context/AuthContext';
 import Pin from '../components/Pin';
 import { Avatar } from '@mui/material';
 
 function Profile() {
     const { user } = useAuth();
-    const [userPins, setUserPins] = useState([]);
-    
-    const { data, loading, error } = useQuery(GET_MY_PINS, {
-        variables: { userId: String(user?.id) },
-        skip: !user,
+    const [activeTab, setActiveTab] = useState('created');
+    const [savedPins, setSavedPins] = useState([]);
+
+    const { data: savedData, loading: savedLoading } = useQuery(GET_SAVED_PINS, {
+        variables: { googleId: user?.googleId },
+        skip: !user || !user.googleId,
     });
 
     useEffect(() => {
@@ -21,12 +22,20 @@ function Profile() {
         }
     }, [data]);
 
-    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
+    useEffect(() => {
+        if (savedData) {
+            setSavedPins(savedData.getSavedPins);
+        }
+    }, [savedData]);
+
+    if (loading || savedLoading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
     if (error) {
         console.error("Profile Query Error:", error);
         return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Error loading profile: {error.message}</div>;
     }
     if (!user) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Please login to view profile</div>;
+
+    const displayPins = activeTab === 'created' ? userPins : savedPins;
 
     return (
         <Wrapper>
@@ -48,15 +57,15 @@ function Profile() {
             
             <PinsContainer>
                 <TabWrapper>
-                    <Tab active>Created</Tab>
-                    <Tab>Saved</Tab>
+                    <Tab active={activeTab === 'created'} onClick={() => setActiveTab('created')}>Created</Tab>
+                    <Tab active={activeTab === 'saved'} onClick={() => setActiveTab('saved')}>Saved</Tab>
                 </TabWrapper>
                 <PinGrid>
-                    {userPins.map((pin, index) => (
-                        <Pin key={index} urls={pin.imageUrl} />
+                    {displayPins.map((pin, index) => (
+                        <Pin key={index} urls={pin.imageUrl} id={pin.id} />
                     ))}
                 </PinGrid>
-                {userPins.length === 0 && <NoPins>You haven't created any pins yet.</NoPins>}
+                {displayPins.length === 0 && <NoPins>You haven't {activeTab === 'created' ? 'created' : 'saved'} any pins yet.</NoPins>}
             </PinsContainer>
         </Wrapper>
     );

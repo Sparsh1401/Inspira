@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LinkIcon from '@mui/icons-material/Link';
+import Modal from './Modal';
 
 function CreatePin() {
     const [title, setTitle] = useState('');
@@ -20,10 +21,28 @@ function CreatePin() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
+    const [modalState, setModalState] = useState({ 
+        isOpen: false, 
+        title: '', 
+        message: '',
+        onConfirm: null 
+    });
+
     const [createPin, { loading, error }] = useMutation(CREATE_PIN);
 
     const handleSave = async () => {
-        if (!title || !imageUrl || !user) return;
+        if (!user) {
+            setModalState({ isOpen: true, title: 'Login Required', message: 'Please login to create a pin.' });
+            return;
+        }
+        if (!imageUrl) {
+            setModalState({ isOpen: true, title: 'Missing Image', message: 'Please upload or generate an image.' });
+            return;
+        }
+        if (!title) {
+            setModalState({ isOpen: true, title: 'Missing Title', message: 'Please add a title for your pin.' });
+            return;
+        }
 
         try {
             await createPin({
@@ -35,9 +54,15 @@ function CreatePin() {
                     userId: String(user.id)
                 }
             });
-            navigate('/');
+            setModalState({ 
+                isOpen: true, 
+                title: 'Success', 
+                message: 'Pin created successfully!',
+                onConfirm: () => navigate('/') 
+            });
         } catch (err) {
             console.error("Error creating pin:", err);
+            setModalState({ isOpen: true, title: 'Error', message: 'Failed to create pin. Please try again.' });
         }
     };
 
@@ -68,6 +93,13 @@ function CreatePin() {
 
   return (
     <Wrapper>
+        <Modal 
+            isOpen={modalState.isOpen} 
+            onClose={() => setModalState({ ...modalState, isOpen: false })} 
+            title={modalState.title} 
+            message={modalState.message}
+            onConfirm={modalState.onConfirm}
+        />
         <Container>
             <Header>
                 <Title>Create Pin</Title>
