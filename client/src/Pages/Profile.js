@@ -11,7 +11,7 @@ function Profile() {
     const [userPins, setUserPins] = useState([]);
     
     const { data, loading, error } = useQuery(GET_MY_PINS, {
-        variables: { userId: user?.id },
+        variables: { userId: String(user?.id) },
         skip: !user,
     });
 

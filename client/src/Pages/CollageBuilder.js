@@ -261,7 +261,7 @@ function CollageBuilder() {
                     description: 'Created with the Collage Builder',
                     imageUrl: dataUrl,
                     link: '',
-                    userId: user.id
+                    userId: String(user.id)
                 }
             });
             setModalState({ isOpen: true, title: 'Success', message: 'Collage saved as Pin!' });

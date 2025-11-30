@@ -321,7 +321,7 @@ function LiveCanvas() {
                     description: 'Created in the Live Canvas',
                     imageUrl: imageUrl,
                     link: '',
-                    userId: user.id
+                    userId: String(user.id)
                 }
             });
             setModalState({ isOpen: true, title: 'Success', message: 'Drawing saved as Pin!' });

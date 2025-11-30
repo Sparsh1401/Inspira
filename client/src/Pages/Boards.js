@@ -11,7 +11,7 @@ function Boards() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { loading, error, data, refetch } = useQuery(GET_BOARDS, {
-        variables: { userId: user?.id },
+        variables: { userId: String(user?.id) },
         skip: !user
     });
     const [createBoard] = useMutation(CREATE_BOARD);
@@ -30,7 +30,7 @@ function Boards() {
                 variables: {
                     title,
                     description,
-                    ownerId: user.id
+                    ownerId: String(user.id)
                 }
             });
             setTitle('');

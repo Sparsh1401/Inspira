@@ -32,7 +32,7 @@ function CreatePin() {
                     description: description,
                     imageUrl: imageUrl,
                     link: link,
-                    userId: user.id
+                    userId: String(user.id)
                 }
             });
             navigate('/');
