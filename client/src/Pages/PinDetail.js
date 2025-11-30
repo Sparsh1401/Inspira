@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_PIN_DETAILS, GET_SAVED_PINS } from '../GraphQL/Queries';
-import { SAVE_PIN } from '../GraphQL/Mutation';
+import { GET_PIN_DETAILS, GET_SAVED_PINS, IS_FOLLOWING, GET_FOLLOWER_COUNT } from '../GraphQL/Queries';
+import { SAVE_PIN, FOLLOW_USER, UNFOLLOW_USER } from '../GraphQL/Mutation';
 import { useAuth } from '../context/AuthContext';
 import { Avatar } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -15,6 +15,8 @@ function PinDetail() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [savePin, { loading: saving }] = useMutation(SAVE_PIN);
+    const [followUser, { loading: following }] = useMutation(FOLLOW_USER);
+    const [unfollowUser, { loading: unfollowing }] = useMutation(UNFOLLOW_USER);
     const [modalState, setModalState] = useState({ 
         isOpen: false, 
         title: '', 
@@ -30,13 +32,30 @@ function PinDetail() {
         variables: { id }
     });
 
+    const pin = data?.getPin;
+    const creatorId = pin?.user?.id;
+
+    const { data: followData, refetch: refetchFollow } = useQuery(IS_FOLLOWING, {
+        variables: { 
+            followerId: user?.id, 
+            followingId: creatorId 
+        },
+        skip: !user || !user.id || !creatorId || user.id === creatorId,
+    });
+
+    const { data: followerCountData, refetch: refetchFollowerCount } = useQuery(GET_FOLLOWER_COUNT, {
+        variables: { userId: creatorId },
+        skip: !creatorId,
+    });
+
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
     if (error) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Error loading pin</div>;
     if (!data?.getPin) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Pin not found</div>;
 
-    const pin = data.getPin;
-
     const isSaved = savedData?.getSavedPins?.some(p => p.imageUrl === pin?.imageUrl);
+    const isFollowing = followData?.isFollowing || false;
+    const followerCount = followerCountData?.getFollowerCount || 0;
+    const isOwnPin = user?.id?.toString() === creatorId?.toString();
 
     const handleSavePin = async () => {
         console.log("handleSavePin called");
@@ -71,6 +90,43 @@ function PinDetail() {
         } catch (err) {
             console.error("Error saving pin:", err);
             setModalState({ isOpen: true, title: 'Error', message: 'Failed to save pin.' });
+        }
+    };
+
+    const handleFollow = async () => {
+        if (!user) {
+            setModalState({ isOpen: true, title: 'Login Required', message: 'Please login to follow users.' });
+            return;
+        }
+        if (!user.id) {
+            setModalState({ isOpen: true, title: 'Error', message: 'User account missing ID. Cannot follow.' });
+            return;
+        }
+        if (isOwnPin) {
+            return; // Can't follow yourself
+        }
+
+        try {
+            if (isFollowing) {
+                await unfollowUser({
+                    variables: {
+                        followerId: user.id,
+                        followingId: creatorId
+                    }
+                });
+            } else {
+                await followUser({
+                    variables: {
+                        followerId: user.id,
+                        followingId: creatorId
+                    }
+                });
+            }
+            await refetchFollow();
+            await refetchFollowerCount();
+        } catch (err) {
+            console.error("Error following/unfollowing user:", err);
+            setModalState({ isOpen: true, title: 'Error', message: err.message || 'Failed to follow/unfollow user.' });
         }
     };
 
@@ -120,9 +176,17 @@ function PinDetail() {
                         </Avatar>
                         <CreatorDetails>
                             <CreatorName>{pin.user?.firstName} {pin.user?.lastName}</CreatorName>
-                            <CreatorFollowers>0 followers</CreatorFollowers>
+                            <CreatorFollowers>{followerCount} {followerCount === 1 ? 'follower' : 'followers'}</CreatorFollowers>
                         </CreatorDetails>
-                        <FollowButton>Follow</FollowButton>
+                        {!isOwnPin && (
+                            <FollowButton 
+                                onClick={handleFollow} 
+                                disabled={following || unfollowing}
+                                isFollowing={isFollowing}
+                            >
+                                {following || unfollowing ? '...' : isFollowing ? 'Following' : 'Follow'}
+                            </FollowButton>
+                        )}
                     </CreatorInfo>
 
                     <CommentsSection>
@@ -295,17 +359,23 @@ const CreatorFollowers = styled.div`
 `;
 
 const FollowButton = styled.button`
-    background-color: #efefef;
+    background-color: ${props => props.isFollowing ? '#111' : '#efefef'};
+    color: ${props => props.isFollowing ? 'white' : '#111'};
     border: none;
     border-radius: 24px;
     padding: 12px 20px;
     font-weight: 600;
     font-size: 16px;
     cursor: pointer;
-    color: #111;
+    transition: background-color 0.2s;
     
     &:hover {
-        background-color: #e2e2e2;
+        background-color: ${props => props.isFollowing ? '#333' : '#e2e2e2'};
+    }
+    
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 `;
 

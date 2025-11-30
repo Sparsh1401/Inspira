@@ -1,5 +1,5 @@
 const graphql = require("graphql");
-const { User, Pin, SavedPins, SharedBoard, BoardPin } = require("../models");
+const { User, Pin, SavedPins, SharedBoard, BoardPin, Follow } = require("../models");
 const { Op } = require("sequelize");
 
 //TypeDefs
@@ -121,6 +121,42 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: graphql.GraphQLID } },
       resolve(parent, args) {
         return SharedBoard.findByPk(args.id);
+      },
+    },
+
+    isFollowing: {
+      type: graphql.GraphQLBoolean,
+      args: { 
+        followerId: { type: graphql.GraphQLID },
+        followingId: { type: graphql.GraphQLID }
+      },
+      async resolve(parent, args) {
+        if (!args.followerId || !args.followingId) {
+          return false;
+        }
+        const follow = await Follow.findOne({
+          where: {
+            followerId: String(args.followerId),
+            followingId: String(args.followingId),
+          },
+        });
+        return !!follow;
+      },
+    },
+
+    getFollowerCount: {
+      type: graphql.GraphQLInt,
+      args: { userId: { type: graphql.GraphQLID } },
+      async resolve(parent, args) {
+        if (!args.userId) {
+          return 0;
+        }
+        const count = await Follow.count({
+          where: {
+            followingId: String(args.userId),
+          },
+        });
+        return count;
       },
     },
   },
@@ -287,6 +323,68 @@ const Mutation = new GraphQLObjectType({
           pinId: args.pinId,
         });
         return Pin.findByPk(args.pinId);
+      },
+    },
+
+    followUser: {
+      type: graphql.GraphQLBoolean,
+      args: {
+        followerId: { type: graphql.GraphQLID },
+        followingId: { type: graphql.GraphQLID },
+      },
+      async resolve(parent, args) {
+        if (!args.followerId || !args.followingId) {
+          throw new Error("followerId and followingId are required");
+        }
+        
+        const followerIdStr = String(args.followerId);
+        const followingIdStr = String(args.followingId);
+        
+        if (followerIdStr === followingIdStr) {
+          throw new Error("Cannot follow yourself");
+        }
+
+        // Check if already following
+        const existing = await Follow.findOne({
+          where: {
+            followerId: followerIdStr,
+            followingId: followingIdStr,
+          },
+        });
+
+        if (existing) {
+          return true; // Already following
+        }
+
+        // Create follow relationship
+        await Follow.create({
+          followerId: followerIdStr,
+          followingId: followingIdStr,
+        });
+
+        return true;
+      },
+    },
+
+    unfollowUser: {
+      type: graphql.GraphQLBoolean,
+      args: {
+        followerId: { type: graphql.GraphQLID },
+        followingId: { type: graphql.GraphQLID },
+      },
+      async resolve(parent, args) {
+        if (!args.followerId || !args.followingId) {
+          throw new Error("followerId and followingId are required");
+        }
+
+        const deleted = await Follow.destroy({
+          where: {
+            followerId: String(args.followerId),
+            followingId: String(args.followingId),
+          },
+        });
+
+        return deleted > 0;
       },
     },
   },

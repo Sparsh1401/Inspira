@@ -84,4 +84,16 @@ const GET_BOARD = gql`
     }
 `
 
-export {GET_MY_PINS, GET_LATEST_PINS, GET_SAVED_PINS, GET_PIN_DETAILS, GET_BOARDS, GET_BOARD};
+const IS_FOLLOWING = gql`
+    query isFollowing($followerId: ID, $followingId: ID) {
+        isFollowing(followerId: $followerId, followingId: $followingId)
+    }
+`
+
+const GET_FOLLOWER_COUNT = gql`
+    query getFollowerCount($userId: ID) {
+        getFollowerCount(userId: $userId)
+    }
+`
+
+export {GET_MY_PINS, GET_LATEST_PINS, GET_SAVED_PINS, GET_PIN_DETAILS, GET_BOARDS, GET_BOARD, IS_FOLLOWING, GET_FOLLOWER_COUNT};

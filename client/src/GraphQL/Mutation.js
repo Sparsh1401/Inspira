@@ -57,4 +57,16 @@ const SAVE_PIN = gql`
     }
 `
 
-export {CREATE_PIN, CREATE_BOARD, ADD_COLLABORATOR, ADD_PIN_TO_BOARD, SAVE_PIN} ;
+const FOLLOW_USER = gql`
+    mutation followUser($followerId: ID!, $followingId: ID!) {
+        followUser(followerId: $followerId, followingId: $followingId)
+    }
+`
+
+const UNFOLLOW_USER = gql`
+    mutation unfollowUser($followerId: ID!, $followingId: ID!) {
+        unfollowUser(followerId: $followerId, followingId: $followingId)
+    }
+`
+
+export {CREATE_PIN, CREATE_BOARD, ADD_COLLABORATOR, ADD_PIN_TO_BOARD, SAVE_PIN, FOLLOW_USER, UNFOLLOW_USER} ;
