@@ -1,4 +1,4 @@
-# Pinterest Clone with Google OAuth
+# Inspira with Google OAuth
 
 A full-stack Pinterest clone built with React, Node.js, GraphQL, and MySQL with Google OAuth authentication.
 
