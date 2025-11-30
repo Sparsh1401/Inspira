@@ -1,232 +1,307 @@
-# Inspira with Google OAuth
+# Inspira - Creative Pin Sharing Platform
 
-A full-stack Pinterest clone built with React, Node.js, GraphQL, and MySQL with Google OAuth authentication.
+<div align="center">
 
-## Features
+![Inspira Logo](https://img.shields.io/badge/Inspira-Creative%20Platform-ff6b6b?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Live-success?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
-- Google OAuth 2.0 Authentication
-- Create and upload pins with images
+**A modern full-stack creative pin sharing platform with real-time collaboration**
+
+[Live Demo](https://inspira-fullstack.onrender.com) • [Report Bug](https://github.com/Sparsh1401/Inspira/issues) • [Request Feature](https://github.com/Sparsh1401/Inspira/issues)
+
+</div>
+
+---
+
+## ✨ Features
+
+🔐 **Authentication**
+- Google OAuth 2.0 integration
+- Secure session management
+- User profile management
+
+📌 **Pin Management**
+- Create and share creative pins
+- Upload images with descriptions
 - Save pins to your collection
-- Responsive Pinterest-style grid layout
-- GraphQL API
-- MySQL database with Sequelize ORM
+- Delete your own pins
 
-## Tech Stack
+🎨 **User Experience**
+- Responsive grid layout
+- Material-UI design system
+- Real-time collaborative canvas
+- AI-powered image generation (optional)
+
+🚀 **Technical Features**
+- GraphQL API
+- PostgreSQL database
+- WebSocket support for real-time features
+- RESTful authentication endpoints
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- React 18
-- Apollo Client (GraphQL)
-- Material-UI
-- Styled Components
-- React Router
+- **React 18** - Modern UI library
+- **Apollo Client** - GraphQL client
+- **Material-UI** - Component library
+- **Styled Components** - CSS-in-JS styling
+- **React Router** - Client-side routing
+- **Socket.IO Client** - Real-time communication
+- **Fabric.js** - Canvas manipulation
 
 ### Backend
-- Node.js
-- Express
-- GraphQL (express-graphql)
-- Passport.js (Google OAuth)
-- Sequelize ORM
-- MySQL
+- **Node.js** - Runtime environment
+- **Express** - Web framework
+- **GraphQL** - API query language
+- **Passport.js** - Authentication middleware
+- **Sequelize** - ORM for PostgreSQL
+- **PostgreSQL** - Production database
+- **Socket.IO** - WebSocket server
+- **OpenAI** - AI image generation (optional)
 
-## Prerequisites
+---
 
-- Node.js (v14 or higher)
-- MySQL database
-- Google OAuth credentials
+## 🚀 Quick Start
 
-## Setup Instructions
+### Prerequisites
+- Node.js v14 or higher
+- PostgreSQL database
+- Google OAuth credentials ([Get here](https://console.cloud.google.com/))
+- (Optional) OpenAI API key
 
-### 1. Clone the repository
+### Local Development Setup
 
-\`\`\`bash
-git clone https://github.com/Sparsh1401/Pinterest_Clone.git
-cd Pinterest_Clone
-\`\`\`
+#### 1. Clone Repository
+```bash
+git clone https://github.com/Sparsh1401/Inspira.git
+cd Inspira
+```
 
-### 2. Set up Google OAuth
-
+#### 2. Configure Google OAuth
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable Google+ API
-4. Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client ID"
+2. Create a new project
+3. Enable Google+ API or People API
+4. Navigate to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
 5. Configure OAuth consent screen
-6. Create OAuth 2.0 Client ID:
-   - Application type: Web application
-   - Authorized redirect URIs:
-     - Development: \`http://localhost:3001/auth/google/callback\`
-     - Production: \`https://your-backend-url.com/auth/google/callback\`
+6. Create OAuth Client:
+   - Type: Web application
+   - Authorized redirect URIs: `http://localhost:3001/auth/google/callback`
 7. Copy Client ID and Client Secret
 
-### 3. Set up MySQL Database
-
-\`\`\`bash
-# Login to MySQL
-mysql -u root -p
+#### 3. Database Setup
+```bash
+# Install PostgreSQL (if not installed)
+# macOS: brew install postgresql
+# Ubuntu: sudo apt-get install postgresql
 
 # Create database
-CREATE DATABASE FakeDatabase;
-\`\`\`
+createdb inspira_db
 
-### 4. Backend Setup
+# Or using psql
+psql -U postgres
+CREATE DATABASE inspira_db;
+```
 
-\`\`\`bash
+#### 4. Backend Setup
+```bash
 cd server
-
-# Install dependencies
 npm install
 
-# Copy environment template and configure
+# Create .env file
 cp .env-copy .env
 
-# Edit .env file with your credentials:
-# - Add your Google OAuth Client ID and Secret
-# - Configure MySQL credentials
-# - Set a random SESSION_SECRET
+# Edit .env with your credentials:
+# - GOOGLE_CLIENT_ID
+# - GOOGLE_CLIENT_SECRET
+# - DATABASE_URL (if not using SQLite for development)
+# - SESSION_SECRET (random string)
+# - OPENAI_API_KEY (optional)
 
-# The database tables will be created automatically when you start the server
+# Start server
 npm start
-\`\`\`
+```
 
-The server will run on http://localhost:3001
+Server runs on `http://localhost:3001`
 
-### 5. Frontend Setup
-
-\`\`\`bash
+#### 5. Frontend Setup
+```bash
 cd client
-
-# Install dependencies
 npm install
-
-# Copy environment template and configure
-cp .env-copy .env
-
-# For development, the default values should work
-# For production, update the API URLs
-
 npm start
-\`\`\`
+```
 
-The client will run on http://localhost:3000
+Client runs on `http://localhost:3000`
 
-## Environment Variables
+---
 
-### Server (.env)
+## 📦 Environment Variables
 
-\`\`\`env
-# Database Configuration
-DB_NAME=FakeDatabase
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_HOST=localhost
-DB_DIALECT=mysql
-
-# Server Configuration
+### Server (`.env`)
+```env
+# Server
 PORT=3001
 NODE_ENV=development
 
-# Google OAuth Configuration
+# Database (PostgreSQL for production)
+DATABASE_URL=postgresql://user:password@localhost:5432/inspira_db
+
+# Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GOOGLE_CALLBACK_URL=http://localhost:3001/auth/google/callback
 
-# Session Secret (use a long random string)
-SESSION_SECRET=your_random_session_secret
+# Security
+SESSION_SECRET=your_random_32+_character_secret
 
-# Client URL
+# CORS
 CLIENT_URL=http://localhost:3000
-\`\`\`
 
-### Client (.env)
+# AI Features (Optional)
+OPENAI_API_KEY=your_openai_api_key
+```
 
-\`\`\`env
-# API Configuration
+### Client (`.env`)
+```env
 REACT_APP_API_URL=http://localhost:3001
 REACT_APP_GRAPHQL_URL=http://localhost:3001/graphql
-REACT_APP_GOOGLE_AUTH_URL=http://localhost:3001/auth/google
-\`\`\`
+```
 
-## Deployment
+---
 
-### Backend Deployment (Heroku, Railway, etc.)
+## 🌐 Production Deployment
 
-1. Set all environment variables in your hosting platform
-2. Ensure MySQL database is accessible
-3. Update \`GOOGLE_CALLBACK_URL\` to production URL
-4. Update \`CLIENT_URL\` to production frontend URL
+### Deployed on Render
 
-### Frontend Deployment (Netlify)
+**Live URL:** [https://inspira-fullstack.onrender.com](https://inspira-fullstack.onrender.com)
 
-1. Build the application:
-   \`\`\`bash
-   cd client
-   npm run build
-   \`\`\`
+The application is deployed as a fullstack service with:
+- PostgreSQL database (Free tier)
+- Combined frontend + backend service
+- Automatic deployments from `Main` branch
 
-2. Deploy to Netlify:
-   - Connect your GitHub repository to Netlify
-   - Set build command: \`npm run build\`
-   - Set publish directory: \`build\`
-   - Add environment variables in Netlify dashboard:
-     - \`REACT_APP_API_URL\`: Your backend URL
-     - \`REACT_APP_GRAPHQL_URL\`: Your GraphQL endpoint
-     - \`REACT_APP_GOOGLE_AUTH_URL\`: Your Google auth endpoint
+### Deploy Your Own
 
-3. Configure redirects for React Router:
-   Create \`client/public/_redirects\`:
-   \`\`\`
-   /*    /index.html   200
-   \`\`\`
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
 
-## Usage
+---
 
-1. Visit the application URL
-2. Click "Continue with Google" to login
-3. Browse pins on the home page
-4. Click "Create" to upload new pins
-5. Save pins to your collection
+## 📊 Database Schema
 
-## Database Schema
+### Users
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| googleId | STRING | Google OAuth ID (unique) |
+| email | STRING | User email (unique) |
+| firstName | STRING | First name |
+| lastName | STRING | Last name |
 
-### Users Table
-- id (Primary Key)
-- googleId (Unique)
-- email (Unique)
-- firstName
-- lastName
+### Pins
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| imageUrl | STRING | Image URL |
+| title | STRING | Pin title |
+| description | TEXT | Pin description |
+| link | STRING | External link |
+| userId | INTEGER | Foreign key to Users |
 
-### Pins Table
-- id (Primary Key)
-- imageUrl
-- title
-- description
-- link
-- userId (Foreign Key)
+### SavedPins
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key |
+| googleId | STRING | User's Google ID |
+| imageUrl | STRING | Saved pin image URL |
 
-### SavedPins Table
-- id (Primary Key)
-- googleId
-- imageUrl
+---
 
-## GraphQL API
+## 🔌 GraphQL API
 
-The GraphQL playground is available at http://localhost:3001/graphql
+Access GraphQL Playground: `http://localhost:3001/graphql`
 
 ### Queries
-- \`latestPins\`: Get latest 20 pins
-- \`myPins(userId)\`: Get pins by user
-- \`getPinByImageURL(imageUrl)\`: Get pin by image URL
-- \`getSavedPins(googleId)\`: Get saved pins by user
+```graphql
+# Get latest pins
+latestPins
+
+# Get user's pins
+myPins(userId: Int!)
+
+# Get pin by image URL
+getPinByImageURL(imageUrl: String!)
+
+# Get saved pins
+getSavedPins(googleId: String!)
+```
 
 ### Mutations
-- \`createUser\`: Register new user
-- \`createPin\`: Create new pin
-- \`deletePin\`: Delete pin
-- \`savePin\`: Save pin to collection
+```graphql
+# Create user
+createUser(input: UserInput!): User
 
-## Contributing
+# Create pin
+createPin(input: PinInput!): Pin
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+# Delete pin
+deletePin(id: Int!): Boolean
 
-## License
+# Save pin
+savePin(input: SavedPinInput!): SavedPin
+```
 
-MIT
+---
+
+## 🎨 Features in Detail
+
+### Real-Time Collaborative Canvas
+- Multiple users can draw simultaneously
+- WebSocket-powered real-time updates
+- Fabric.js for canvas manipulation
+- Room-based collaboration
+
+### AI Image Generation
+- Powered by OpenAI DALL-E
+- Generate custom images from text prompts
+- Integrated into pin creation flow
+- Optional feature (requires API key)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Google OAuth for authentication
+- Material-UI for beautiful components
+- Apollo GraphQL for efficient data fetching
+- Sequelize for database ORM
+- Render for hosting
+
+---
+
+<div align="center">
+
+Made with ❤️ by [Sparsh Agarwal](https://github.com/Sparsh1401)
+
+⭐ Star this repo if you find it helpful!
+
+</div>
