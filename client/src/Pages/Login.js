@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
-import PinterestIcon from '@mui/icons-material/Pinterest';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const Login = () => {
   const { login } = useAuth();
@@ -12,7 +12,7 @@ const Login = () => {
       <Overlay />
       <LoginCard>
         <LogoWrapper>
-          <PinterestIcon style={{ fontSize: '48px', color: '#e60023' }} />
+          <AutoAwesomeIcon style={{ fontSize: '48px', color: '#ff6b6b' }} />
         </LogoWrapper>
         <Title>Welcome to Inspira</Title>
         <Subtitle>Discover and share creative ideas</Subtitle>
