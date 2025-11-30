@@ -51,6 +51,8 @@ const SAVE_PIN = gql`
             id
             imageUrl
             title
+            description
+            link
         }
     }
 `

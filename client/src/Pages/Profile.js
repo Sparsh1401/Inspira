@@ -17,9 +17,10 @@ function Profile() {
         skip: !user,
     });
 
-    const { data: savedData, loading: savedLoading } = useQuery(GET_SAVED_PINS, {
+    const { data: savedData, loading: savedLoading, error: savedError } = useQuery(GET_SAVED_PINS, {
         variables: { googleId: user?.googleId },
         skip: !user || !user.googleId,
+        fetchPolicy: 'cache-and-network',
     });
 
     useEffect(() => {
@@ -29,15 +30,20 @@ function Profile() {
     }, [data]);
 
     useEffect(() => {
-        if (savedData) {
+        if (savedData && savedData.getSavedPins) {
             setSavedPins(savedData.getSavedPins);
+        } else {
+            setSavedPins([]);
         }
     }, [savedData]);
 
-    if (loading || savedLoading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
+    if (loading || (activeTab === 'saved' && savedLoading)) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Loading...</div>;
     if (error) {
         console.error("Profile Query Error:", error);
         return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Error loading profile: {error.message}</div>;
+    }
+    if (savedError) {
+        console.error("Saved Pins Query Error:", savedError);
     }
     if (!user) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '50px' }}>Please login to view profile</div>;
 

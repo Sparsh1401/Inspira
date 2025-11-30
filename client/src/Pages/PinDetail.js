@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_PIN_DETAILS } from '../GraphQL/Queries';
+import { GET_PIN_DETAILS, GET_SAVED_PINS } from '../GraphQL/Queries';
 import { SAVE_PIN } from '../GraphQL/Mutation';
 import { useAuth } from '../context/AuthContext';
 import { Avatar } from '@mui/material';
@@ -21,6 +21,11 @@ function PinDetail() {
         message: '' 
     });
 
+    const { data: savedData, refetch: refetchSaved } = useQuery(GET_SAVED_PINS, {
+        variables: { googleId: user?.googleId },
+        skip: !user || !user.googleId,
+    });
+
     const { data, loading, error } = useQuery(GET_PIN_DETAILS, {
         variables: { id }
     });
@@ -31,18 +36,37 @@ function PinDetail() {
 
     const pin = data.getPin;
 
+    const isSaved = savedData?.getSavedPins?.some(p => p.imageUrl === pin?.imageUrl);
+
     const handleSavePin = async () => {
+        console.log("handleSavePin called");
+        console.log("User:", user);
+        console.log("isSaved:", isSaved);
+        
         if (!user) {
+            console.log("User not logged in, showing modal");
             setModalState({ isOpen: true, title: 'Login Required', message: 'Please login to save pins.' });
             return;
         }
+        if (!user.googleId) {
+            console.error("User missing googleId:", user);
+            setModalState({ isOpen: true, title: 'Error', message: 'User account missing Google ID. Cannot save.' });
+            return;
+        }
+        if (isSaved) {
+            console.log("Pin already saved, returning");
+            return;
+        }
+
         try {
+            console.log("Attempting to save pin with variables:", { googleId: user.googleId, imageUrl: pin.imageUrl });
             await savePin({
                 variables: {
                     googleId: user.googleId,
                     imageUrl: pin.imageUrl
                 }
             });
+            await refetchSaved();
             setModalState({ isOpen: true, title: 'Success', message: 'Pin saved to your profile!' });
         } catch (err) {
             console.error("Error saving pin:", err);
@@ -72,8 +96,8 @@ function PinDetail() {
                             <Icon>...</Icon>
                             <Icon>↑</Icon>
                         </Icons>
-                        <SaveButton onClick={handleSavePin} disabled={saving}>
-                            {saving ? 'Saving...' : 'Save'}
+                        <SaveButton onClick={handleSavePin} disabled={saving || isSaved} isSaved={isSaved}>
+                            {isSaved ? 'Saved' : saving ? 'Saving...' : 'Save'}
                         </SaveButton>
                     </Header>
                     
@@ -208,7 +232,7 @@ const Icon = styled.div`
 `;
 
 const SaveButton = styled.button`
-    background-color: #e60023;
+    background-color: ${props => props.isSaved ? '#111' : '#e60023'};
     color: white;
     border: none;
     border-radius: 24px;

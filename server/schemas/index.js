@@ -56,12 +56,40 @@ const RootQuery = new GraphQLObjectType({
     getSavedPins: {
       type: new GraphQLList(PinType),
       args: { googleId: { type: GraphQLString } },
-      resolve(parent, args) {
-        return SavedPins.findAll({
+      async resolve(parent, args) {
+        if (!args.googleId) {
+          return [];
+        }
+        
+        const savedPins = await SavedPins.findAll({
           where: {
             googleId: args.googleId,
           },
         });
+        
+        // If no saved pins, return empty array
+        if (!savedPins || savedPins.length === 0) {
+          return [];
+        }
+        
+        // Get the imageUrls from saved pins
+        const imageUrls = savedPins.map(sp => sp.imageUrl).filter(url => url);
+        
+        // If no valid imageUrls, return empty array
+        if (imageUrls.length === 0) {
+          return [];
+        }
+        
+        // Find all pins that match these imageUrls
+        const pins = await Pin.findAll({
+          where: {
+            imageUrl: {
+              [Op.in]: imageUrls,
+            },
+          },
+        });
+        
+        return pins || [];
       },
     },
 
@@ -165,18 +193,48 @@ const Mutation = new GraphQLObjectType({
 
     // SAVE PIN MUTATION
     savePin: {
-      type: SavedPinType,
+      type: PinType,
       args: {
         googleId: { type: GraphQLString },
         imageUrl: { type: GraphQLString },
       },
-      resolve(parent, args) {
-        SavedPins.create({
+      async resolve(parent, args) {
+        if (!args.googleId || !args.imageUrl) {
+          throw new Error("googleId and imageUrl are required");
+        }
+        
+        // First verify the pin exists in the Pin table
+        const pin = await Pin.findOne({
+          where: {
+            imageUrl: args.imageUrl,
+          },
+        });
+        
+        if (!pin) {
+          throw new Error("Pin not found. Cannot save a pin that doesn't exist.");
+        }
+        
+        // Check if pin is already saved
+        const existing = await SavedPins.findOne({
+          where: {
+            googleId: args.googleId,
+            imageUrl: args.imageUrl,
+          },
+        });
+        
+        if (existing) {
+          // Return the pin if already saved
+          return pin;
+        }
+        
+        // Save the pin
+        await SavedPins.create({
           googleId: args.googleId,
           imageUrl: args.imageUrl,
-        }).catch((err) => {
-          console.log(err);
         });
+        
+        // Return the full pin object
+        return pin;
       },
     },
 
