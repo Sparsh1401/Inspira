@@ -14,8 +14,8 @@ const Login = () => {
         <LogoWrapper>
           <PinterestIcon style={{ fontSize: '48px', color: '#e60023' }} />
         </LogoWrapper>
-        <Title>Welcome to Pinterest</Title>
-        <Subtitle>Find new ideas to try</Subtitle>
+        <Title>Welcome to Inspira</Title>
+        <Subtitle>Discover and share creative ideas</Subtitle>
         <GoogleButton onClick={login}>
           <GoogleIcon>
             <svg width="20" height="20" viewBox="0 0 20 20">
@@ -40,7 +40,7 @@ const Login = () => {
           Continue with Google
         </GoogleButton>
         <Disclaimer>
-          By continuing, you agree to Pinterest's Terms of Service and Privacy Policy
+          By continuing, you agree to Inspira's Terms of Service and Privacy Policy
         </Disclaimer>
       </LoginCard>
     </LoginContainer>
